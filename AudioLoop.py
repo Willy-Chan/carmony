@@ -4,17 +4,21 @@ import os
 class AudioLoop():
     def __init__(self, file_paths):
         pygame.init()
-        pygame.mixer.set_num_channels(len(file_paths))
-        self.sounds = [self.load_sound(file_path) for file_path in file_paths]
+        self.tracks = ['piano', 'bass', 'vocals', 'drums', 'guitar', 'other']
+        if set(file_paths.keys()) != set(self.tracks):
+            raise ValueError(f"file_paths dictionary must contain exactly these keys: {self.tracks}")
+        pygame.mixer.set_num_channels(len(self.tracks))
+        self.sounds = {track: self.load_sound(file_paths[track]) for track in self.tracks}
         
     def load_sound(self, file):
         sound = pygame.mixer.Sound(file)
         return sound
     
     def start(self):
-        for sound in self.sounds:
-            sound.play(loops=-1)
+        for track in self.tracks:
+            self.sounds[track].play(loops=-1)
     
-    def adjust_volumes(self, volume_list):
-        for i in range(0, len(self.sounds)):
-            pygame.mixer.Channel(i).set_volume(volume_list[i])
+    def adjust_volumes(self, volume_dict):
+        for track in self.tracks:
+            if track in volume_dict:
+                pygame.mixer.Channel(self.tracks.index(track)).set_volume(volume_dict[track])
